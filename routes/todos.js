@@ -1,0 +1,77 @@
+const express = require('express');
+const router = express.Router();
+const { v4: uuidv4 } = require('uuid');
+const Todo = require('../models/todo');
+
+// Create a new todo
+router.post('/', async (req, res) => {
+  try {
+    const { user_id, text, text_sequence, completed } = req.body;
+    if (!user_id || !text || text_sequence === undefined) {
+      return res.status(400).json({ error: 'Required fields missing' });
+    }
+    const now = new Date().toISOString();
+    const newTodo = {
+      id: uuidv4(),
+      user_id,
+      text,
+      text_sequence,
+      completed: completed || false,
+      created_dttm: now,
+      modified_dttm: now,
+    };
+    const todo = await Todo.createTodo(newTodo);
+    res.status(201).json(todo);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get todos of a user
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const todos = await Todo.getTodosByUser(req.params.userId);
+    res.json(todos);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update a todo (partial update)
+router.put('/:id', async (req, res) => {
+  try {
+    const updates = req.body;
+    updates.modified_dttm = new Date().toISOString();
+    const todo = await Todo.updateTodo(req.params.id, updates);
+    if (!todo) return res.status(404).json({ error: 'Todo not found' });
+    res.json(todo);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a todo
+router.delete('/:id', async (req, res) => {
+  try {
+    await Todo.deleteTodo(req.params.id);
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Sync todos since last modified date excluding user's own todos
+router.get('/sync', async (req, res) => {
+  try {
+    const { excludeUser, lastSync } = req.query;
+    if (!excludeUser || !lastSync) {
+      return res.status(400).json({ error: 'excludeUser and lastSync query params required' });
+    }
+    const todos = await Todo.syncTodos(excludeUser, lastSync);
+    res.json(todos);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;

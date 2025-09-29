@@ -1,10 +1,9 @@
 {
   "name": "todo-backend",
   "version": "1.0.0",
-  "description": "",
+    "description": "Backend TODO app with supabase DB",
   "main": "./src/server.js",
-  
-    "scripts": {
+  "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,7 +12,12 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "dotenv": "^16.3.1",
+    "pg": "^8.11.2",
+    "pg-promise": "^11.5.1",
+    "uuid": "^9.0.0"
   }
 }
