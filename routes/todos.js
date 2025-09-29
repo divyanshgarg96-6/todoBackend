@@ -5,24 +5,30 @@ const Todo = require('../models/todo');
 
 // Create a new todo
 router.post('/', async (req, res) => {
+    console.log("POST /todos hit!", req.body);
   try {
     const { user_id, text, text_sequence, completed } = req.body;
     if (!user_id || !text || text_sequence === undefined) {
+        console.log("Dont come here")
       return res.status(400).json({ error: 'Required fields missing' });
     }
     const now = new Date().toISOString();
+    const tempId = uuidv4()
     const newTodo = {
-      id: uuidv4(),
-      user_id,
-      text,
+      id: tempId,
+      user_id: tempId,
+      maintext:"Hello",
       text_sequence,
       completed: completed || false,
       created_dttm: now,
       modified_dttm: now,
     };
+    console.log("Trying to create now")
     const todo = await Todo.createTodo(newTodo);
+    console.log("todo",todo)
     res.status(201).json(todo);
   } catch (err) {
+    console.log("err",err)
     res.status(500).json({ error: err.message });
   }
 });

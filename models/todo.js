@@ -3,16 +3,20 @@ const db = pgp(process.env.DATABASE_URL);
 
 module.exports = {
   createTodo: async (todo) => {
+    console.log("inside create todo ",todo)
     const query = `
       INSERT INTO todos 
-        (id, user_id, text, text_sequence, completed, created_dttm, modified_dttm)
+        ( user_id, maintext, text_sequence, completed, created_dttm, modified_dttm)
       VALUES
-        ($1, $2, $3, $4, $5, $6, $7)
+        ($1, $2, $3, $4, $5, $6)
       RETURNING *`;
+      console.log("query",query)
+      console.log("process.env.DATABASE_URL",process.env.DATABASE_URL)
+      // console.log("db",db)
     return db.one(query, [
-      todo.id,
+      // todo.id,
       todo.user_id,
-      todo.text,
+      todo.maintext,
       todo.text_sequence,
       todo.completed || false,
       todo.created_dttm,
