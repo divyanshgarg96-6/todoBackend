@@ -12,11 +12,10 @@ router.post('/', async (req, res) => {
         console.log("Dont come here")
       return res.status(400).json({ error: 'Required fields missing' });
     }
-    const now = new Date().toISOString();
-    const tempId = uuidv4()
+    
     const newTodo = {
-      id: id,
-      user_id: user_id,
+      id,
+      user_id,
       maintext,
       text_sequence,
       completed: completed || false,
@@ -46,8 +45,11 @@ router.get('/user/:userId', async (req, res) => {
 // Update a todo (partial update)
 router.put('/:id', async (req, res) => {
   try {
+    
     const updates = req.body;
+    console.log("Update Body",req.body)
     updates.modified_dttm = new Date().toISOString();
+    console.log("Trying to update now", updates)
     const todo = await Todo.updateTodo(req.params.id, updates);
     if (!todo) return res.status(404).json({ error: 'Todo not found' });
     res.json(todo);

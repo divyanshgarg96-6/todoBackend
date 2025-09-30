@@ -1,20 +1,20 @@
-const pgp = require('pg-promise')();
+const pgp = require("pg-promise")();
 const db = pgp(process.env.DATABASE_URL);
 
 module.exports = {
   createTodo: async (todo) => {
-    console.log("inside create todo ",todo)
+    console.log("inside create todo ", todo);
     const query = `
       INSERT INTO todos 
-        ( user_id, maintext, text_sequence, completed, created_dttm, modified_dttm)
+        ( id, user_id, maintext, text_sequence, completed, created_dttm, modified_dttm)
       VALUES
-        ($1, $2, $3, $4, $5, $6)
+        ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *`;
-      console.log("query",query)
-      console.log("process.env.DATABASE_URL",process.env.DATABASE_URL)
-      // console.log("db",db)
+    console.log("query", query);
+    console.log("process.env.DATABASE_URL", process.env.DATABASE_URL);
+    // console.log("db",db)
     return db.one(query, [
-      // todo.id,
+      todo.id,
       todo.user_id,
       todo.maintext,
       todo.text_sequence,
@@ -30,35 +30,36 @@ module.exports = {
   },
 
   updateTodo: async (id, updates) => {
-  const setFragments = [];
-  const values = [];
-  let idx = 1;
+    console.log("INside updateTod", "id", id, "updates",updates)
+    const setFragments = [];
+    const values = [];
+    let idx = 1;
 
-
-  for (const [key, value] of Object.entries(updates)) {
-    if (value !== undefined) {
-      setFragments.push(`${key} = $${idx}`);
-      values.push(value);
-      idx++;
+    for (const [key, value] of Object.entries(updates)) {
+      if (value !== undefined) {
+        setFragments.push(`${key} = $${idx}`);
+        values.push(value);
+        idx++;
+      }
     }
-  }
 
-  if (setFragments.length === 0) {
-    // Nothing to update
-    return db.oneOrNone('SELECT * FROM todos WHERE id = $1', [id]);
-  }
+    if (setFragments.length === 0) {
+      // Nothing to update
+      return db.oneOrNone("SELECT * FROM todos WHERE id = $1", [id]);
+    }
 
-  // Add id for WHERE clause
-  values.push(id);
-
-  const query = `
+    // Add id for WHERE clause
+    values.push(id);
+    console.log("setFragments",setFragments)
+    console.log("values",values)
+    const query = `
     UPDATE todos
-       SET ${setFragments.join(', ')}
+       SET ${setFragments.join(", ")}
      WHERE id = $${idx}
      RETURNING *;
   `;
 
-  return db.oneOrNone(query, values);
+    return db.oneOrNone(query, values);
   },
 
   deleteTodo: async (id) => {
@@ -72,5 +73,5 @@ module.exports = {
       WHERE user_id != $1 AND modified_dttm > $2
       ORDER BY modified_dttm ASC`;
     return db.any(query, [excludeUser, lastSyncDate]);
-  }
+  },
 };
