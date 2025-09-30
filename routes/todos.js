@@ -12,7 +12,7 @@ router.post('/', async (req, res) => {
         console.log("Dont come here")
       return res.status(400).json({ error: 'Required fields missing' });
     }
-    
+
     const newTodo = {
       id,
       user_id,
@@ -61,6 +61,7 @@ router.put('/:id', async (req, res) => {
 // Delete a todo
 router.delete('/:id', async (req, res) => {
   try {
+    console.log("Trying to delete now", req.params.id)
     await Todo.deleteTodo(req.params.id);
     res.status(204).send();
   } catch (err) {
@@ -77,6 +78,26 @@ router.get('/sync', async (req, res) => {
     }
     const todos = await Todo.syncTodos(excludeUser, lastSync);
     res.json(todos);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//Mark a todo as completed
+router.patch('/:id/complete', async (req, res) => {
+  try {
+       const todoId = req.params.id;  
+    const { modified_dttm } = req.body;
+    console.log("in complete api call", todoId, modified_dttm)
+    if (!modified_dttm) {
+      return res.status(400).json({ error: 'modified_dttm is required' });
+    }
+
+    const todo = await Todo.markCompleted(todoId, modified_dttm);
+    if (!todo) {
+      return res.status(404).json({ error: 'Todo not found' });
+    }
+    res.json(todo);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

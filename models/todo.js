@@ -2,6 +2,7 @@ const pgp = require("pg-promise")();
 const db = pgp(process.env.DATABASE_URL);
 
 module.exports = {
+  //Completed
   createTodo: async (todo) => {
     console.log("inside create todo ", todo);
     const query = `
@@ -12,7 +13,6 @@ module.exports = {
       RETURNING *`;
     console.log("query", query);
     console.log("process.env.DATABASE_URL", process.env.DATABASE_URL);
-    // console.log("db",db)
     return db.one(query, [
       todo.id,
       todo.user_id,
@@ -29,6 +29,7 @@ module.exports = {
     return db.any(query, [userId]);
   },
 
+  //Completed
   updateTodo: async (id, updates) => {
     console.log("INside updateTod", "id", id, "updates",updates)
     const setFragments = [];
@@ -44,11 +45,9 @@ module.exports = {
     }
 
     if (setFragments.length === 0) {
-      // Nothing to update
       return db.oneOrNone("SELECT * FROM todos WHERE id = $1", [id]);
     }
 
-    // Add id for WHERE clause
     values.push(id);
     console.log("setFragments",setFragments)
     console.log("values",values)
@@ -62,7 +61,9 @@ module.exports = {
     return db.oneOrNone(query, values);
   },
 
+  //Completed
   deleteTodo: async (id) => {
+    console.log("Inside deleteTodo",id)
     const query = `DELETE FROM todos WHERE id=$1`;
     return db.result(query, [id]);
   },
@@ -73,5 +74,16 @@ module.exports = {
       WHERE user_id != $1 AND modified_dttm > $2
       ORDER BY modified_dttm ASC`;
     return db.any(query, [excludeUser, lastSyncDate]);
+  },
+
+  markCompleted: async (id, modified_dttm) => {
+    const query = `
+      UPDATE todos
+         SET completed     = TRUE,
+             modified_dttm = $2
+       WHERE id = $1
+       RETURNING *;
+    `;
+    return db.oneOrNone(query, [id, modified_dttm]);
   },
 };
