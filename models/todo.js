@@ -30,16 +30,35 @@ module.exports = {
   },
 
   updateTodo: async (id, updates) => {
-    const setStr = [];
-    const values = [];
-    let idx = 1;
-    for (const key in updates) {
-      setStr.push(`${key} = $${idx++}`);
-      values.push(updates[key]);
+  const setFragments = [];
+  const values = [];
+  let idx = 1;
+
+
+  for (const [key, value] of Object.entries(updates)) {
+    if (value !== undefined) {
+      setFragments.push(`${key} = $${idx}`);
+      values.push(value);
+      idx++;
     }
-    values.push(id); // for WHERE clause
-    const query = `UPDATE todos SET ${setStr.join(', ')} WHERE id = $${idx} RETURNING *`;
-    return db.oneOrNone(query, values);
+  }
+
+  if (setFragments.length === 0) {
+    // Nothing to update
+    return db.oneOrNone('SELECT * FROM todos WHERE id = $1', [id]);
+  }
+
+  // Add id for WHERE clause
+  values.push(id);
+
+  const query = `
+    UPDATE todos
+       SET ${setFragments.join(', ')}
+     WHERE id = $${idx}
+     RETURNING *;
+  `;
+
+  return db.oneOrNone(query, values);
   },
 
   deleteTodo: async (id) => {
