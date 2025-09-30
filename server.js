@@ -1,4 +1,6 @@
 require('dotenv').config();
+require('dns').setDefaultResultOrder('ipv4first');
+
 const express = require('express');
 const cors = require('cors');
 const todoRoutes = require('./routes/todos');
@@ -17,3 +19,5 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+
