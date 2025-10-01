@@ -59,15 +59,18 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a todo
-router.delete('/:id', async (req, res) => {
+router.put('/delete/:id', async (req, res) => {
   try {
+        console.log('inside delete');
+
     const { deleted_dttm } = req.body;
     if (!deleted_dttm) {
       return res.status(400).json({ error: 'deleted_dttm is required' });
     }
 
     console.log('Trying to delete now', req.params.id, 'at', deleted_dttm);
-    const todo = await Todo.softDeleteTodo(req.params.id, deleted_dttm);
+    const todo = await Todo.deleteTodo(req.params.id, deleted_dttm);
+    console.log("todo",todo)
     if (!todo) {
       return res.status(404).json({ error: 'Todo not found' });
     }
