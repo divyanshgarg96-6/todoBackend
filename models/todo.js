@@ -62,10 +62,21 @@ module.exports = {
   },
 
   //Completed
-  deleteTodo: async (id) => {
+  deleteTodo: async (id, modified_dttm) => {
     console.log("Inside deleteTodo",id)
-    const query = `DELETE FROM todos WHERE id=$1`;
-    return db.result(query, [id]);
+  const query = `
+    UPDATE todos
+    SET deleted = true,
+        deleted_dttm = $2,
+        modified_dttm = $2
+    WHERE id = $1
+  `;
+  return db.none(query, [id, now]);
+
+    
+  const now = new Date().toISOString();
+
+
   },
 
   syncTodos: async (excludeUser, lastSyncDate) => {

@@ -61,9 +61,17 @@ router.put('/:id', async (req, res) => {
 // Delete a todo
 router.delete('/:id', async (req, res) => {
   try {
-    console.log("Trying to delete now", req.params.id)
-    await Todo.deleteTodo(req.params.id);
-    res.status(204).send();
+    const { deleted_dttm } = req.body;
+    if (!deleted_dttm) {
+      return res.status(400).json({ error: 'deleted_dttm is required' });
+    }
+
+    console.log('Trying to delete now', req.params.id, 'at', deleted_dttm);
+    const todo = await Todo.softDeleteTodo(req.params.id, deleted_dttm);
+    if (!todo) {
+      return res.status(404).json({ error: 'Todo not found' });
+    }
+    res.json(todo);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -72,7 +80,9 @@ router.delete('/:id', async (req, res) => {
 // Sync todos since last modified date excluding user's own todos
 router.get('/sync', async (req, res) => {
   try {
+    
     const { excludeUser, lastSync } = req.query;
+    console.log("inside Sync todo",  excludeUser, lastSync)
     if (!excludeUser || !lastSync) {
       return res.status(400).json({ error: 'excludeUser and lastSync query params required' });
     }
